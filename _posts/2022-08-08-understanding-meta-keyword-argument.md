@@ -23,8 +23,9 @@ ValueError: Metadata inference failed in …
 ```
 
 In this blog post, we will discuss:
-* what the is `meta` keyword argument, and
-* how to use `meta` effectively
+
+- what the is `meta` keyword argument, and
+- how to use `meta` effectively
 
 with some minimal examples.
 
@@ -36,9 +37,7 @@ Before answering this, let's quickly discuss Dask DataFrames.
 
 A Dask DataFrame is a lazy object composed of multiple pandas DataFrames, where each pandas DataFrame is called a "partition". These are stacked along the index and Dask keeps track of these partitions using “divisions”, which is a tuple representing the start and end index of each partition.
 
-
 ![Dask DataFrame consists of multiple pandas DataFrames](https://docs.dask.org/en/stable/_images/dask-dataframe.svg)
-
 
 When you create a Dask DataFrame, you usually see something like the following:
 
@@ -62,11 +61,11 @@ npartitions=2
 Dask Name: from_pandas, 2 tasks
 ```
 
-Here, Dask has created the structure of the DataFrame using some "metadata" information about the *column names* and their *datatypes*. Dask uses this metadata for understanding Dask operations and creating accurate task graphs (i.e., the logic of your computation).
+Here, Dask has created the structure of the DataFrame using some "metadata" information about the _column names_ and their _datatypes_. Dask uses this metadata for understanding Dask operations and creating accurate task graphs (i.e., the logic of your computation).
 
 Internally, this metadata is represented as an empty pandas DataFrame or Series, which has the same structure as your output Dask DataFrame. To learn more about how `meta` is defined internally, check out the [DataFrame Internal Design documentation](https://docs.dask.org/en/stable/dataframe-design.html#metadata).
 
-The `meta` keyword argument in various Dask DataFrame functions allows you to explicitly share this metadata information with Dask. Note that the keyword argument is concerned with the metadata of the *output* of those functions.
+The `meta` keyword argument in various Dask DataFrame functions allows you to explicitly share this metadata information with Dask. Note that the keyword argument is concerned with the metadata of the _output_ of those functions.
 
 To see the actual metadata information for a collection, you can look at the `._meta` attribute:
 
@@ -108,17 +107,18 @@ Index: []
 
 The [other ways you can describe `meta`](https://docs.dask.org/en/stable/dataframe-design.html#metadata) are:
 
-* For a DataFrame, you can specify `meta` as a:
-    * Python dictionary: `{column_name_1: dtype_1, column_name_2: dtype_2, …}`
-    * Iterable of tuples: `[(column_name_1, dtype_1), (columns_name_2, dtype_2, …)]`
+- For a DataFrame, you can specify `meta` as a:
 
-    **Note** that while describing `meta` as shown above, using a dictionary or iterable of tuples, the order in which you mention column names is important. Dask will use the same order to create the pandas DataFrame for `meta`. If the orders don't match, you will see the following error:
+  - Python dictionary: `{column_name_1: dtype_1, column_name_2: dtype_2, …}`
+  - Iterable of tuples: `[(column_name_1, dtype_1), (columns_name_2, dtype_2, …)]`
 
-    ```
-    ValueError: The columns in the computed data do not match the columns in the provided metadata
-    ```
+  **Note** that while describing `meta` as shown above, using a dictionary or iterable of tuples, the order in which you mention column names is important. Dask will use the same order to create the pandas DataFrame for `meta`. If the orders don't match, you will see the following error:
 
-* For a Series output, you can specify `meta` using a single tuple: `(coulmn_name, dtype)`
+  ```
+  ValueError: The columns in the computed data do not match the columns in the provided metadata
+  ```
+
+- For a Series output, you can specify `meta` using a single tuple: `(coulmn_name, dtype)`
 
 You should **not** describe `meta` using just a `dtype` (like: `meta="int64"`), even for scalar outputs. If you do, you will see the following warning:
 
@@ -149,7 +149,7 @@ Here, the Dask DataFrame `ddf` has only one partition. Hence, `len(x)` on that o
 10
 ```
 
-## `meta` does not *force* the structure or dtypes
+## `meta` does not _force_ the structure or dtypes
 
 `meta` can be thought of as a suggestion to Dask. Dask uses this `meta` to generate the task graph until it can infer the actual metadata from the values. It **does not** force the output to have the structure or dtype of the specified `meta`.
 
