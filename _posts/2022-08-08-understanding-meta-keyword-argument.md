@@ -8,7 +8,7 @@ theme: twitter
 
 {% include JB/setup %}
 
-If you have worked with Dask DataFrames or Dask Arrays, you have probably come across the `meta` keyword argument, perhaps while using methods like `apply()`.
+If you have worked with Dask DataFrames or Dask Arrays, you have probably come across the `meta` keyword argument. Perhaps, while using methods like `apply()`:
 
 ```python
 import dask
@@ -54,12 +54,13 @@ UserWarning: `meta` is not specified, inferred from partial data. Please provide
 ValueError: Metadata inference failed in …
 ```
 
-In this blog post, we will discuss:
+If the above messages look familar, this blog post is for you. :)
 
-- what the is `meta` keyword argument, and
-- how to use `meta` effectively
+We will discuss:
 
-with some minimal examples.
+- what the is `meta` keyword argument,
+- why does Dask need `meta`, and
+- how to use it effectively.
 
 We will look at `meta` mainly in the context of Dask DataFrames, however, similar principles also apply to Dask Arrays.
 
@@ -67,9 +68,11 @@ We will look at `meta` mainly in the context of Dask DataFrames, however, simila
 
 Before answering this, let's quickly discuss [Dask DataFrames](https://docs.dask.org/en/stable/dataframe.html).
 
-A Dask DataFrame is a lazy object composed of multiple [pandas DataFrames](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html), where each pandas DataFrame is called a "partition". These are stacked along the index and Dask keeps track of these partitions using “divisions”, which is a tuple representing the start and end index of each partition.
+A Dask DataFrame is a lazy object composed of multiple [pandas DataFrames](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html), where each pandas DataFrame is called a "partition". These are stacked along the index and Dask keeps track of these partitions using "divisions", which is a tuple representing the start and end index of each partition.
 
-![Dask DataFrame consists of multiple pandas DataFrames](https://docs.dask.org/en/stable/_images/dask-dataframe.svg)
+<div align="center">
+  <img src="https://docs.dask.org/en/stable/_images/dask-dataframe.svg" alt="Dask DataFrame consists of multiple pandas DataFrames" width=50%/>
+</div>
 
 When you create a Dask DataFrame, you usually see something like the following:
 
@@ -93,19 +96,53 @@ npartitions=2
 Dask Name: from_pandas, 2 tasks
 ```
 
-Here, Dask has created the structure of the DataFrame using some "metadata" information about the _column names_ and their _datatypes_. Dask uses this metadata for understanding Dask operations and creating accurate task graphs (i.e., the logic of your computation).
+Here, Dask has created the structure of the DataFrame using some "metadata" information about the _column names_ and their _datatypes_. This metadata information is called `meta`. Dask uses `meta` for understanding Dask operations and creating accurate task graphs (i.e., the logic of your computation).
 
-Internally, this metadata is represented as an empty pandas [DataFrame](https://docs.dask.org/en/stable/dataframe.html) or [Series](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html), which has the same structure as your output Dask DataFrame. To learn more about how `meta` is defined internally, check out the [DataFrame Internal Design documentation](https://docs.dask.org/en/stable/dataframe-design.html#metadata).
+The `meta` _keyword argument_ in various Dask DataFrame functions allows you to explicitly share this metadata information with Dask. Note that the keyword argument is concerned with the metadata of the _output_ of those functions.
 
-The `meta` keyword argument in various Dask DataFrame functions allows you to explicitly share this metadata information with Dask. Note that the keyword argument is concerned with the metadata of the _output_ of those functions.
+## Why does Dask need `meta`?
 
-To see the actual metadata information for a collection, you can look at the `._meta` attribute:
+Dask computations are evaluated _lazily_. This means Dask creates the logic and flow, called task graph, of the computation immediately, but evaluates them only when necessary -- usually, on calling `.compute()`.
+
+An example task graph generated to compute the sum of the DataFrame:
 
 ```python
->>> ddf._meta
-Empty DataFrame
-Columns: [x, y]
-Index: []
+>>> s = ddf.sum()
+>>> s
+Dask Series Structure:
+npartitions=1
+x    int64
+y      ...
+dtype: int64
+Dask Name: dataframe-sum-agg, 5 tasks
+
+>>> s.visualize()
+```
+
+<div align="center">
+  <img src="/images/understanding-meta-task-graph.png" alt="Dask task graph, starts with two partitions thatare input to a dataframe-sum-chunk task each. Their results are input to a single dataframe-sum-agg which produces the final output." width=50%/>
+</div>
+
+```python
+>>> s.compute()
+x    15
+y    75
+dtype: int64
+```
+
+This is a signle operation, but Dask workflows usually have multiple such operation chained together. Therefore, to create the task graph effectively, Dask needs to know the strucutre and datatypes of the DataFame after each operation. Especially because Dask does not know the actual values/structure of the DataFrame yet.
+
+This is where `meta` is comes in.
+
+In the above example, the Dask DataFrame changed into a Series after `sum()`. Dask knows this (even before we call `compute()`) only becasue of `meta`.
+
+Internally, `meta` is represented as an empty pandas [DataFrame](https://docs.dask.org/en/stable/dataframe.html) or [Series](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html), which has the same structure as the Dask DataFrame. To learn more about how `meta` is defined internally, check out the [DataFrame Internal Design documentation](https://docs.dask.org/en/stable/dataframe-design.html#metadata).
+
+To see the actual metadata information for a collection, you can look at the `._meta` attribute[1]:
+
+```python
+>>> s._meta
+Series([], dtype: int64)
 ```
 
 ## How to specify `meta`?
@@ -215,7 +252,7 @@ While computing, Dask evaluates the actual metadata with columns `x` and `y`. Th
 
 ## Using `_meta` directly
 
-In some rare case, you can also set the `_meta` attribute directly for a Dask DataFrame. For example, if the DataFrame was read with incorrect dtypes, like:
+In some rare case, you can also set the `_meta` attribute[1] directly for a Dask DataFrame. For example, if the DataFrame was read with incorrect dtypes, like:
 
 ```python
 >>> ddf = dd.DataFrame.from_dict(
@@ -270,3 +307,5 @@ Dask Name: add, 4 tasks
 Thanks for reading!
 
 Have you run into issues with `meta` before? Please let us know on [Discourse](https://dask.discourse.group/), and we will consider including it here, or updating the Dask documentation. :)
+
+[1] NOTE: `._meta` is not a public property, so we recommend using it only when necessary. There is [an ongoing discussion](https://github.com/dask/dask/issues/8585) around create public methods to get, set, and view the information in `._meta`, and this blog post will be updated to use the public methods when they're created.
