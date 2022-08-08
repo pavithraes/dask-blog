@@ -33,9 +33,9 @@ We will look at `meta` mainly in the context of Dask DataFrames, however, simila
 
 ## What is `meta`?
 
-Before answering this, let's quickly discuss Dask DataFrames.
+Before answering this, let's quickly discuss [Dask DataFrames](https://docs.dask.org/en/stable/dataframe.html).
 
-A Dask DataFrame is a lazy object composed of multiple pandas DataFrames, where each pandas DataFrame is called a "partition". These are stacked along the index and Dask keeps track of these partitions using “divisions”, which is a tuple representing the start and end index of each partition.
+A Dask DataFrame is a lazy object composed of multiple [pandas DataFrames](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html), where each pandas DataFrame is called a "partition". These are stacked along the index and Dask keeps track of these partitions using “divisions”, which is a tuple representing the start and end index of each partition.
 
 ![Dask DataFrame consists of multiple pandas DataFrames](https://docs.dask.org/en/stable/_images/dask-dataframe.svg)
 
@@ -63,7 +63,7 @@ Dask Name: from_pandas, 2 tasks
 
 Here, Dask has created the structure of the DataFrame using some "metadata" information about the _column names_ and their _datatypes_. Dask uses this metadata for understanding Dask operations and creating accurate task graphs (i.e., the logic of your computation).
 
-Internally, this metadata is represented as an empty pandas DataFrame or Series, which has the same structure as your output Dask DataFrame. To learn more about how `meta` is defined internally, check out the [DataFrame Internal Design documentation](https://docs.dask.org/en/stable/dataframe-design.html#metadata).
+Internally, this metadata is represented as an empty pandas [DataFrame](https://docs.dask.org/en/stable/dataframe.html) or [Series](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.html), which has the same structure as your output Dask DataFrame. To learn more about how `meta` is defined internally, check out the [DataFrame Internal Design documentation](https://docs.dask.org/en/stable/dataframe-design.html#metadata).
 
 The `meta` keyword argument in various Dask DataFrame functions allows you to explicitly share this metadata information with Dask. Note that the keyword argument is concerned with the metadata of the _output_ of those functions.
 
