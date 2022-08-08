@@ -8,7 +8,39 @@ theme: twitter
 
 {% include JB/setup %}
 
-If you have worked with Dask DataFrames or Dask Arrays, you have probably come across the `meta` keyword argument and seen one or more of the following warning/error messages:
+If you have worked with Dask DataFrames or Dask Arrays, you have probably come across the `meta` keyword argument, perhaps while using methods like `apply()`.
+
+```python
+import dask
+import pandas as pd
+
+ddf = dask.datasets.timeseries()
+
+
+def my_custom_arithmetic(r):
+    if r.id > 1000:
+        return r.x * r.x + r.y + r.y
+    else:
+        return 0
+
+
+ddf["my_computation"] = ddf.apply(
+    my_custom_arithmetic, axis=1, meta=pd.Series(dtype="float64")
+)
+
+ddf.head()
+# Output:
+#
+#                        id    name         x         y  my_computation
+# timestamp
+# 2000-01-01 00:00:00  1055  Victor -0.575374  0.868320        2.067696
+# 2000-01-01 00:00:01   994   Zelda  0.963684  0.972240        0.000000
+# 2000-01-01 00:00:02   982  George -0.997531 -0.876222        0.000000
+# 2000-01-01 00:00:03   981  Ingrid  0.852159 -0.419733        0.000000
+# 2000-01-01 00:00:04  1029   Jerry -0.839431 -0.736572       -0.768500
+```
+
+You might have also seen one or more of the following warnings/errors:
 
 ```
 UserWarning: You did not provide metadata, so Dask is running your function on a small dataset to guess output types. It is possible that Dask will guess incorrectly.
