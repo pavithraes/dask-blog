@@ -130,7 +130,7 @@ y    75
 dtype: int64
 ```
 
-This is a signle operation, but Dask workflows usually have multiple such operation chained together. Therefore, to create the task graph effectively, Dask needs to know the strucutre and datatypes of the DataFame after each operation. Especially because Dask does not know the actual values/structure of the DataFrame yet.
+This is a single operation, but Dask workflows usually have multiple such operation chained together. Therefore, to create the task graph effectively, Dask needs to know the strucutre and datatypes of the DataFame after each operation. Especially because Dask does not know the actual values/structure of the DataFrame yet.
 
 This is where `meta` is comes in.
 
@@ -206,9 +206,9 @@ For example:
 pandas.core.series.Series
 ```
 
-Here, the Dask DataFrame `ddf` has only one partition. Hence, `len(x)` on that one partition would result in a scalar output of integer dtype. However, when we compute it, we see a pandas Series. This conforms that Dask is coercing the outputs to pandas objects.
+Here, the Dask DataFrame `ddf` has only one partition. Hence, `len(x)` on that one partition would result in a scalar output of integer dtype. However, when we compute it, we see a pandas Series. This confirms that Dask is coercing the outputs to pandas objects.
 
-**Another note**, Dask Arrays may not always do this conversion. You can look at the API reference for your particular Array operation for details.
+**Another note**, Dask Arrays may not always do this conversion. You can look at the [API reference](https://docs.dask.org/en/stable/array-api.html) for your particular Array operation for details.
 
 ```python
 >>> import numpy as np
@@ -250,9 +250,9 @@ ValueError: The columns in the computed data do not match the columns in the pro
 
 While computing, Dask evaluates the actual metadata with columns `x` and `y`. This does not match the `meta` that we provided, and hence, Dask raises a helpful error message. Notice how Dask does not change the output to have `a` and `b` here, rather uses `a` and `b` column names only for intermediate task graphs.
 
-## Using `_meta` directly
+## Using `._meta` directly
 
-In some rare case, you can also set the `_meta` attribute[1] directly for a Dask DataFrame. For example, if the DataFrame was read with incorrect dtypes, like:
+In some rare case, you can also set the `._meta` attribute[1] directly for a Dask DataFrame. For example, if the DataFrame was created with incorrect dtypes, like:
 
 ```python
 >>> ddf = dd.DataFrame.from_dict(
@@ -284,7 +284,7 @@ Original error is below:
 TypeError('can only concatenate str (not "int") to str')
 ```
 
-Here, we can explicitly define `_meta`:
+Here, we can explicitly define `._meta`[1]:
 
 ```python
 >>> ddf._meta = pd.DataFrame(columns=["x", "y"], dtype="int64")
