@@ -54,7 +54,7 @@ UserWarning: `meta` is not specified, inferred from partial data. Please provide
 ValueError: Metadata inference failed in …
 ```
 
-If the above messages look familar, this blog post is for you. :)
+If the above messages look familiar, this blog post is for you. :)
 
 We will discuss:
 
