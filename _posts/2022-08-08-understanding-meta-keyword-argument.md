@@ -308,4 +308,4 @@ Thanks for reading!
 
 Have you run into issues with `meta` before? Please let us know on [Discourse](https://dask.discourse.group/), and we will consider including it here, or updating the Dask documentation. :)
 
-[1] NOTE: `._meta` is not a public property, so we recommend using it only when necessary. There is [an ongoing discussion](https://github.com/dask/dask/issues/8585) around create public methods to get, set, and view the information in `._meta`, and this blog post will be updated to use the public methods when they're created.
+[1] NOTE: `._meta` is not a public property, so we recommend using it only when necessary. There is [an ongoing discussion](https://github.com/dask/dask/issues/8585) around creating public methods to get, set, and view the information in `._meta`, and this blog post will be updated to use the public methods when they're created.
